@@ -10,6 +10,11 @@ landing-builds/*.blockmap
 landing-builds/*.yml
 landing-builds/manifest.json
 
+# Local landing handoff artifacts (the production landing lives in landing/).
+/public/downloads/
+/public/landing-builds/
+docs/superpowers/
+
 # Local agent/runtime folders
 .agents/
 .superpowers/

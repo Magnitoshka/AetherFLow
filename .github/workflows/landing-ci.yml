@@ -1,0 +1,42 @@
+name: Landing CI
+
+on:
+  pull_request:
+    paths:
+      - 'landing/**'
+      - '.github/workflows/landing-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'landing/**'
+      - '.github/workflows/landing-ci.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: landing
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: landing/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build landing page
+        run: npm run build

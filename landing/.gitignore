@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.vercel/
+
+# Installer binaries and their local manifest are published via GitHub Releases.
+*.exe
+public/landing-builds/
+public/downloads/
+
+# Local tooling and environment files.
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+
+# Internal implementation notes.
+docs/superpowers/
+.agents/

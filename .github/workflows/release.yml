@@ -1,0 +1,62 @@
+name: Release Windows installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test application
+        run: npm test
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Build Windows installer
+        run: npm run dist
+
+      - name: Prepare release assets
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          $installer = Get-ChildItem -LiteralPath release -Filter '*.exe' |
+            Where-Object { $_.Name -notmatch 'uninstall' } |
+            Sort-Object Length -Descending |
+            Select-Object -First 1
+
+          if (-not $installer) {
+            throw 'No Windows installer was produced in release/'
+          }
+
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          Copy-Item -LiteralPath $installer.FullName -Destination 'release-assets/AetherFlow-Setup-latest.exe'
+          Copy-Item -LiteralPath $installer.FullName -Destination "release-assets/AetherFlow-Setup-$version.exe"
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME `
+            --title "AetherFlow $env:GITHUB_REF_NAME" `
+            --generate-notes `
+            release-assets/AetherFlow-Setup-latest.exe `
+            release-assets/AetherFlow-Setup-$(($env:GITHUB_REF_NAME -replace '^v', '')).exe
